@@ -138,6 +138,64 @@ class AuditLog(db.Model):
     def __repr__(self):
         return f'<AuditLog {self.id} - {self.action}>'
 
+# Initialize database immediately on module import (for production)
+def force_init_database():
+    """Force initialize database on every application start"""
+    try:
+        with app.app_context():
+            print("🔧 Force initializing database...")
+            
+            # Create all tables
+            db.create_all()
+            print("✅ Database tables created!")
+            
+            # Verify tables exist
+            from sqlalchemy import inspect
+            inspector = inspect(db.engine)
+            tables = inspector.get_table_names()
+            print(f"📋 Tables: {tables}")
+            
+            # Create default users if none exist
+            try:
+                user_count = User.query.count()
+                if user_count == 0:
+                    print("👤 Creating default users...")
+                    
+                    # Create admin
+                    admin = User(username='admin', email='admin@elms.com', role='admin', team=None)
+                    admin.set_password('admin123')
+                    db.session.add(admin)
+                    
+                    # Create manager
+                    manager = User(username='manager', email='manager@elms.com', role='manager', team='Engineering')
+                    manager.set_password('manager123')
+                    db.session.add(manager)
+                    
+                    # Create employee
+                    employee = User(username='employee', email='employee@elms.com', role='employee', team='Engineering')
+                    employee.set_password('employee123')
+                    db.session.add(employee)
+                    
+                    db.session.commit()
+                    print("✅ Default users created!")
+                else:
+                    print(f"ℹ️  Found {user_count} existing users")
+                    
+            except Exception as user_error:
+                print(f"⚠️  User creation error: {user_error}")
+                db.session.rollback()
+            
+    except Exception as e:
+        print(f"❌ Database initialization error: {e}")
+        import traceback
+        traceback.print_exc()
+
+# Force initialize database when module is imported
+try:
+    force_init_database()
+except Exception as e:
+    print(f"⚠️  Module-level database init failed: {e}")
+
 # Forms
 class RegistrationForm(FlaskForm):
     username = StringField('Username', validators=[DataRequired(), Length(min=4, max=20)])
