@@ -19,14 +19,17 @@ app = Flask(__name__)
 # Configuration
 SECRET_KEY = os.environ.get('SECRET_KEY') or secrets.token_hex(16)
 
-# Always use SQLite database (works in both development and production)
-# SQLite is perfect for this application size and provides excellent performance
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///leaves.db'
+# Use instance directory for SQLite database (works in production)
+instance_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'instance')
+os.makedirs(instance_path, exist_ok=True)
+db_path = os.path.join(instance_path, 'elms.db')
+
+app.config['SQLALCHEMY_DATABASE_URI'] = f'sqlite:///{db_path}'
 app.config['SECRET_KEY'] = SECRET_KEY
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
-# Ensure SQLite database directory exists
-os.makedirs(os.path.dirname(os.path.abspath('leaves.db')), exist_ok=True)
+print(f"📁 Database path: {db_path}")
+print(f"📁 Instance directory: {instance_path}")
 
 # Production settings
 if os.environ.get('FLASK_ENV') == 'production':
