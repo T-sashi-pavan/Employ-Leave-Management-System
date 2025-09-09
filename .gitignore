@@ -36,6 +36,12 @@ instance/
 *.sqlite
 *.sqlite3
 
+# Development/Testing files (exclude from deployment)
+app.py
+view_database.py
+test_application.py
+config_production.py
+
 # IDE
 .vscode/
 .idea/

@@ -3,12 +3,16 @@ services:
     name: employee-leave-management
     env: python
     runtime: python-3.11.9
-    buildCommand: pip install -r requirements-light.txt
-    startCommand: gunicorn app_new:app
+    buildCommand: |
+      pip install --upgrade pip
+      pip install -r requirements.txt
+    startCommand: gunicorn app_new:app --bind 0.0.0.0:$PORT
     envVars:
       - key: SECRET_KEY
         generateValue: true
       - key: FLASK_ENV
         value: production
+      - key: PYTHON_VERSION
+        value: "3.11.9"
     # SQLite database will be created automatically
     # No external database needed - SQLite file will persist on Render
