@@ -4,12 +4,12 @@
 
 | Platform | Best For | Difficulty | Database | Cost |
 |----------|----------|------------|----------|------|
-| **Render** ⭐ | Full Flask Apps | Easy | PostgreSQL | Free tier |
-| **Railway** | Flask + DB | Easy | PostgreSQL | Free tier |
-| **Heroku** | Traditional | Medium | PostgreSQL | Paid only |
-| **Vercel** | Frontend only | Hard | External DB | Limited |
+| **Render** ⭐ | Full Flask Apps | Easy | SQLite (persistent) | Free tier |
+| **Railway** | Flask + DB | Easy | SQLite (persistent) | Free tier |
+| **Heroku** | Traditional | Medium | SQLite (⚠️ resets) | Paid only |
+| **Vercel** | Frontend only | Hard | ❌ No persistence | Limited |
 
-**🎯 Recommendation: Use Render for this project!**
+**🎯 Recommendation: Use Render for SQLite-based Flask apps!**
 
 ---
 
@@ -36,8 +36,8 @@ SECRET_KEY=your-super-secret-production-key
 FLASK_ENV=production
 ```
 
-### Step 4: Database (Auto-configured)
-Render will create PostgreSQL database automatically.
+### Step 4: Database (SQLite - Automatic)
+Your app uses SQLite database which will be created automatically on first run. No additional database setup required!
 
 **🎉 Your app will be live at**: `https://your-app-name.onrender.com`
 
@@ -58,6 +58,8 @@ FLASK_ENV=production
 
 **🎉 Your app will be live at**: `https://your-app-name.up.railway.app`
 
+**Note**: Railway provides persistent storage for SQLite files.
+
 ---
 
 ## 🔧 **Option 3: Heroku Deployment**
@@ -73,40 +75,45 @@ echo "web: gunicorn app_new:app" > Procfile
 ```bash
 heroku login
 heroku create your-app-name
-heroku addons:create heroku-postgresql:hobby-dev
+# Note: Heroku's ephemeral filesystem will reset SQLite on each dyno restart
+# For Heroku, consider adding PostgreSQL addon:
+# heroku addons:create heroku-postgresql:hobby-dev
 git push heroku main
 heroku open
 ```
 
+**⚠️ Warning**: Heroku's filesystem is ephemeral, so SQLite database will reset on dyno restarts.
+
 ---
 
-## 🚫 **Why NOT Vercel for this project**
+## 🚫 **Why NOT Vercel for this SQLite project**
 
-### Issues with Vercel:
-1. **No Database Persistence** - SQLite resets every deployment
+### Issues with Vercel + SQLite:
+1. **No Database Persistence** - SQLite file resets every request
 2. **Serverless Limitations** - 10-second execution limit
-3. **Session Problems** - Flask sessions don't work properly
-4. **Cold Starts** - Slow response times
+3. **File System** - Read-only filesystem in serverless functions
+4. **Cold Starts** - Database recreated on each cold start
 
 ### If you MUST use Vercel:
-1. **Separate Frontend/Backend**:
-   - Deploy Flask API to Render
-   - Create React frontend for Vercel
-   - Connect via REST APIs
+1. **Switch to External Database**:
+   - Use PlanetScale (MySQL)
+   - Use MongoDB Atlas
+   - Use Supabase (PostgreSQL)
+2. **API-Only Deployment**: Deploy as API routes, separate frontend
 
 ---
 
-## 🗄️ **Database Migration (SQLite → PostgreSQL)**
+## 🗄️ **SQLite Database Benefits**
 
-Your app will automatically work with PostgreSQL on Render/Railway. The `config_production.py` handles this.
+Your app uses SQLite which provides:
+- ✅ **Zero Configuration** - No database server setup
+- ✅ **Portable** - Single file database (leaves.db)
+- ✅ **Fast Performance** - Perfect for CRUD applications
+- ✅ **Cost Effective** - No database hosting fees
+- ✅ **Reliable** - ACID compliant transactions
+- ✅ **Easy Backup** - Simple file copy
 
-### Manual Migration (if needed):
-```python
-# Export SQLite data
-python view_database.py
-
-# Import to PostgreSQL (automatic on first run)
-```
+**Perfect for Employee Leave Management systems!**
 
 ---
 

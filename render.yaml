@@ -9,12 +9,5 @@ services:
         generateValue: true
       - key: FLASK_ENV
         value: production
-      - key: DATABASE_URL
-        fromDatabase:
-          name: employee-leave-db
-          property: connectionString
-
-databases:
-  - name: employee-leave-db
-    databaseName: employee_leave_system
-    user: admin
+    # SQLite database will be created automatically
+    # No external database needed - SQLite file will persist on Render

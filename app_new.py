@@ -18,19 +18,15 @@ app = Flask(__name__)
 
 # Configuration
 SECRET_KEY = os.environ.get('SECRET_KEY') or secrets.token_hex(16)
-DATABASE_URL = os.environ.get('DATABASE_URL')
 
-if DATABASE_URL:
-    # Production: Use PostgreSQL
-    if DATABASE_URL.startswith('postgres://'):
-        DATABASE_URL = DATABASE_URL.replace('postgres://', 'postgresql://', 1)
-    app.config['SQLALCHEMY_DATABASE_URI'] = DATABASE_URL
-else:
-    # Development: Use SQLite
-    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///leaves.db'
-
+# Always use SQLite database (works in both development and production)
+# SQLite is perfect for this application size and provides excellent performance
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///leaves.db'
 app.config['SECRET_KEY'] = SECRET_KEY
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+
+# Ensure SQLite database directory exists
+os.makedirs(os.path.dirname(os.path.abspath('leaves.db')), exist_ok=True)
 
 # Production settings
 if os.environ.get('FLASK_ENV') == 'production':

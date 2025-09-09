@@ -37,17 +37,22 @@ FLASK_ENV=production
 
 In Render Dashboard, add these environment variables:
 - `SECRET_KEY`: `your-super-secret-key-for-production`
-- `DATABASE_URL`: Will be auto-generated for PostgreSQL
 - `FLASK_ENV`: `production`
 
 ### Step 5: Database Setup
 
-Render provides PostgreSQL. Update your app to use it in production.
+Your app uses SQLite database which will be automatically created on first run. No additional database configuration needed!
+
+**Benefits of SQLite on Render:**
+- ✅ Persistent storage (file doesn't reset)
+- ✅ Zero configuration required
+- ✅ Fast performance for your app size
+- ✅ No additional costs
 
 ### Features on Render:
 ✅ Automatic HTTPS
 ✅ Free tier available
-✅ Persistent database storage
+✅ Persistent SQLite storage
 ✅ Continuous deployment from Git
 ✅ Custom domains
 ✅ Built-in monitoring
@@ -55,13 +60,14 @@ Render provides PostgreSQL. Update your app to use it in production.
 ### URLs after deployment:
 - **Application**: `https://your-app-name.onrender.com`
 - **Admin Access**: Login with admin credentials
-- **Database**: Managed PostgreSQL included
+- **Database**: SQLite file (automatically created)
 
 ---
 
-## 💡 **Why Render for Flask?**
+## 💡 **Why Render for SQLite Flask Apps?**
 - Native Python support
-- Persistent database storage
+- Persistent file storage (SQLite works perfectly)
 - No cold starts (unlike serverless)
 - Easy environment variable management
 - Built-in HTTPS and monitoring
+- Zero database configuration needed
