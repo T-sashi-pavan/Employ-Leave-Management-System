@@ -15,9 +15,28 @@ import re
 
 # Initialize Flask app
 app = Flask(__name__)
-app.config['SECRET_KEY'] = secrets.token_hex(16)
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///leaves.db'
+
+# Configuration
+SECRET_KEY = os.environ.get('SECRET_KEY') or secrets.token_hex(16)
+DATABASE_URL = os.environ.get('DATABASE_URL')
+
+if DATABASE_URL:
+    # Production: Use PostgreSQL
+    if DATABASE_URL.startswith('postgres://'):
+        DATABASE_URL = DATABASE_URL.replace('postgres://', 'postgresql://', 1)
+    app.config['SQLALCHEMY_DATABASE_URI'] = DATABASE_URL
+else:
+    # Development: Use SQLite
+    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///leaves.db'
+
+app.config['SECRET_KEY'] = SECRET_KEY
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+
+# Production settings
+if os.environ.get('FLASK_ENV') == 'production':
+    app.config['SESSION_COOKIE_SECURE'] = True
+    app.config['SESSION_COOKIE_HTTPONLY'] = True
+    app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'
 
 # Initialize extensions
 db = SQLAlchemy(app)
@@ -681,8 +700,21 @@ def init_db():
 
 if __name__ == '__main__':
     init_db()
-    print("🚀 Employee Leave Management System starting...")
-    print("📊 You can view the SQLite database using DB Browser for SQLite")
-    print("💾 Database file: leaves.db")
-    print("🌐 Access the application at: http://127.0.0.1:5000")
-    app.run(debug=True, host='127.0.0.1', port=5000)
+    
+    # Check if running in production
+    is_production = os.environ.get('FLASK_ENV') == 'production'
+    
+    if is_production:
+        print("🚀 Employee Leave Management System starting in PRODUCTION mode...")
+        print("🔒 Debug mode: DISABLED")
+        print("🗄️ Database: PostgreSQL")
+        # In production, gunicorn will handle the app
+        port = int(os.environ.get('PORT', 5000))
+        app.run(host='0.0.0.0', port=port, debug=False)
+    else:
+        print("🚀 Employee Leave Management System starting in DEVELOPMENT mode...")
+        print("🔧 Debug mode: ENABLED")
+        print("📊 You can view the SQLite database using DB Browser for SQLite")
+        print("💾 Database file: leaves.db")
+        print("🌐 Access the application at: http://127.0.0.1:5000")
+        app.run(debug=True, host='127.0.0.1', port=5000)
