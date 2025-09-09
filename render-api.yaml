@@ -1,0 +1,17 @@
+services:
+  - type: web
+    name: elms-api
+    env: docker
+    dockerfilePath: ./Dockerfile.api
+    repo: https://github.com/T-sashi-pavan/Employ-Leave-Management-System
+    region: oregon
+    plan: free
+    branch: main
+    envVars:
+      - key: FLASK_ENV
+        value: production
+      - key: SECRET_KEY
+        generateValue: true
+      - key: DATABASE_URL
+        value: sqlite:///instance/elms_api.db
+    healthCheckPath: /api/health
