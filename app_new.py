@@ -6,10 +6,10 @@ from wtforms import StringField, PasswordField, SelectField, DateField, TextArea
 from wtforms.validators import DataRequired, Email, Length, ValidationError, EqualTo
 from werkzeug.security import generate_password_hash, check_password_hash
 from datetime import datetime, date, timedelta
-import pandas as pd
+import csv
 import os
 from functools import wraps
-from io import BytesIO
+from io import BytesIO, StringIO
 import secrets
 import re
 
@@ -662,28 +662,41 @@ def export_csv():
     if team:
         query = query.filter(User.team == team)
     
-    # Execute query and create DataFrame
+    # Execute query and create CSV data
     results = query.all()
-    df = pd.DataFrame([{
-        'Request ID': r.id,
-        'Employee': r.employee_username,
-        'Team': r.team,
-        'Start Date': r.start_date,
-        'End Date': r.end_date,
-        'Days': (r.end_date - r.start_date).days + 1,
-        'Reason': r.reason,
-        'Status': r.status.title(),
-        'Applied Date': r.applied_on.strftime('%Y-%m-%d %H:%M')
-    } for r in results])
     
-    # Create CSV response
-    output = BytesIO()
-    df.to_csv(output, index=False)
-    output.seek(0)
+    # Create CSV data using Python's built-in csv module
+    output = StringIO()
+    csv_writer = csv.writer(output)
+    
+    # Write CSV header
+    csv_writer.writerow([
+        'Request ID', 'Employee', 'Team', 'Start Date', 'End Date', 
+        'Days', 'Reason', 'Status', 'Applied Date'
+    ])
+    
+    # Write CSV data rows
+    for r in results:
+        csv_writer.writerow([
+            r.id,
+            r.employee_username,
+            r.team,
+            r.start_date.strftime('%Y-%m-%d'),
+            r.end_date.strftime('%Y-%m-%d'),
+            (r.end_date - r.start_date).days + 1,
+            r.reason,
+            r.status.title(),
+            r.applied_on.strftime('%Y-%m-%d %H:%M')
+        ])
+    
+    # Get CSV content
+    csv_content = output.getvalue()
+    output.close()
     
     log_action(f'Exported leave data to CSV')
     
-    response = make_response(output.getvalue())
+    # Create response with CSV content
+    response = make_response(csv_content)
     response.headers['Content-Type'] = 'text/csv'
     response.headers['Content-Disposition'] = 'attachment; filename=leave_requests.csv'
     return response

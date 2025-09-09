@@ -2,7 +2,8 @@ services:
   - type: web
     name: employee-leave-management
     env: python
-    buildCommand: pip install -r requirements.txt
+    runtime: python-3.11.9
+    buildCommand: pip install -r requirements-light.txt
     startCommand: gunicorn app_new:app
     envVars:
       - key: SECRET_KEY
